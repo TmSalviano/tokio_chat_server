@@ -1,0 +1,8 @@
+[package]
+name = "tokio_chat_server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.44.1", features = ["time", "rt-multi-thread", "macros", "sync", "fs"]}
+tokio-stream = { version = "0.1.17"}
