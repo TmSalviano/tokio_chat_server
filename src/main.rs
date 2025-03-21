@@ -11,20 +11,35 @@ use log::info;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
+// Group Chat:
+//DataStructure to store the sockets
+//Task - listen to possible connections on a loop Client connections with the Server/Listener and add the
+//socket to the socket_store if active open connection as established
+//Tasks to handle the sockets (TCP Streams)
+//in socket_handle() write the bytes from the data stream to all other clients
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let ip_addr = "127.0.0.1:8080";
-    let server = TcpListener::bind(ip_addr).await?;
-    println!("Passive open was established");
-
-    let socket = match server.accept().await {
-        Ok((socket, _)) => socket,
-        Err(_) => panic!("Failed to establish an active connection"),
-    };
-
+    let server = passive_open(ip_addr).await?;
+    let socket = active_open(server).await;
     handle_socket(socket).await?;
 
     Ok(())
+}
+
+async fn passive_open(ip_addr: &str) -> Result<TcpListener>{
+    let server = TcpListener::bind(ip_addr).await?;
+    println!("Passive open was established");
+    Ok(server)
+}
+
+async fn active_open(server: TcpListener) -> TcpStream {
+    let socket = match server.accept().await {
+        Ok((socket, _)) => socket,
+        Err(_) => panic!("Failed to establish an active open connection"),
+    };
+    socket
 }
 
 async fn handle_socket(mut socket: TcpStream) -> Result<()> {
@@ -35,14 +50,16 @@ async fn handle_socket(mut socket: TcpStream) -> Result<()> {
             Ok(0) => {
                 println!("client disconnected");
                 return Ok(());
-            },
+            }
             Ok(n) => {
-                print!("Remote endpoint message: {}", String::from_utf8_lossy(&buf).trim());
-            },
+                print!(
+                    "Remote endpoint message: {}",
+                    String::from_utf8_lossy(&buf).trim()
+                );
+            }
             Err(_) => {
                 panic!("data transfer phase error")
             }
-
         }
     }
 }
