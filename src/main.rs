@@ -51,7 +51,7 @@ async fn handle_socket(mut socket: TcpStream) -> Result<()> {
                 println!("client disconnected");
                 return Ok(());
             }
-            Ok(n) => {
+            Ok(_) => {
                 print!(
                     "Remote endpoint message: {}",
                     String::from_utf8_lossy(&buf).trim()
